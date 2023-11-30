@@ -32,5 +32,5 @@ target/
 .tmp
 bin
 
-/build/
+build/
 .gradle/

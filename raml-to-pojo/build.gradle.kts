@@ -1,15 +1,3 @@
-plugins {
-  `java-library`
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_11
-  targetCompatibility = JavaVersion.VERSION_11
-
-  withSourcesJar()
-  withJavadocJar()
-}
-
 dependencies {
   implementation(platform(project(":platform")))
 
@@ -22,4 +10,5 @@ dependencies {
   implementation("org.codehaus.jackson:jackson-mapper-asl")
   implementation("org.codehaus.jackson:jackson-core-asl")
   implementation("javax.annotation:javax.annotation-api")
+  implementation("javax.xml.bind:jaxb-api")
 }

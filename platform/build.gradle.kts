@@ -17,5 +17,6 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:2.9.10.4")
     api("javax.annotation:javax.annotation-api:1.3.2")
     api("javax.validation:validation-api:1.1.0.Final")
+    api("javax.xml.bind:jaxb-api:2.3.0")
   }
 }

@@ -1,9 +1,7 @@
 package org.raml.pojotoraml;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
-import com.google.common.collect.FluentIterable;
 import org.raml.builder.TypeBuilder;
 import org.raml.builder.TypeDeclarationBuilder;
 import org.raml.builder.TypePropertyBuilder;
@@ -11,7 +9,6 @@ import org.raml.pojotoraml.types.RamlType;
 import org.raml.pojotoraml.types.RamlTypeFactory;
 import org.raml.pojotoraml.types.ScalarType;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -147,18 +144,12 @@ public class PojoToRamlImpl implements PojoToRaml {
     }
 
     private TypeDeclarationBuilder handleEnum(final RamlType quickType, final RamlAdjuster adjuster, Map<String, TypeDeclarationBuilder> builtTypes) {
-
         Class<? extends Enum> c = (Class<? extends Enum>) quickType.type();
         TypeBuilder typeBuilder = TypeBuilder.type().enumValues(
-                FluentIterable.of(c.getEnumConstants()).transform(new Function<Enum, String>() {
-                    @Nullable
-                    @Override
-                    public String apply(@Nullable Enum o) {
-                        return adjuster.adjustEnumValue(quickType.type(), o.name());
-                    }
-                }).toArray(String.class)
+          Arrays.stream(c.getEnumConstants())
+            .map(o -> adjuster.adjustEnumValue(quickType.type(), o.name()))
+            .toArray(String[]::new)
         );
-
 
         adjuster.adjustType(quickType.type(), quickType.getRamlSyntax().id(), typeBuilder);
         TypeDeclarationBuilder typeDeclarationBuilder = TypeDeclarationBuilder.typeDeclaration(quickType.getRamlSyntax().id()).ofType(typeBuilder);

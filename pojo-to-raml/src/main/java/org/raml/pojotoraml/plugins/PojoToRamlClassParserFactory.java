@@ -15,15 +15,12 @@
  */
 package org.raml.pojotoraml.plugins;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import org.raml.pojotoraml.ClassParser;
 import org.raml.pojotoraml.ClassParserFactory;
 import org.raml.pojotoraml.field.FieldClassParser;
 
-import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static org.raml.pojotoraml.util.AnnotationFinder.annotationFor;
 
@@ -55,29 +52,20 @@ public class PojoToRamlClassParserFactory implements ClassParserFactory {
 
       RamlGenerators generators = annotationFor(topPackage, RamlGenerators.class);
       Optional<ClassParser> classParserOptional =
-          FluentIterable.of(generators.value()).filter(new Predicate<RamlGeneratorForClass>() {
-
-            @Override
-            public boolean apply(@Nullable RamlGeneratorForClass ramlGeneratorForClass) {
-              return ramlGeneratorForClass.forClass().equals(clazz);
-            }
-          }).first().transform(new Function<RamlGeneratorForClass, ClassParser>() {
-
-            @Nullable
-            @Override
-            public ClassParser apply(@Nullable RamlGeneratorForClass ramlGeneratorForClass) {
+          Arrays.stream(generators.value())
+            .filter(ramlGeneratorForClass -> ramlGeneratorForClass.forClass().equals(clazz))
+            .findFirst()
+            .map(ramlGeneratorForClass -> {
               try {
                 return ramlGeneratorForClass.generator().parser().newInstance();
               } catch (InstantiationException | IllegalAccessException e) {
-
                 return null;
               }
-            }
-          });
+            });
 
-      return classParserOptional.or(new FieldClassParser());
+      return classParserOptional.orElseGet(FieldClassParser::new);
     }
 
-    return Optional.fromNullable(parser).or(new FieldClassParser());
+    return Optional.ofNullable(parser).orElseGet(FieldClassParser::new);
   }
 }
