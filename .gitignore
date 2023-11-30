@@ -31,3 +31,6 @@ target/
 .idea
 .tmp
 bin
+
+/build/
+.gradle/

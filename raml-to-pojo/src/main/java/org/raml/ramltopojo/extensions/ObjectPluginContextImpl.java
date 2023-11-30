@@ -1,7 +1,5 @@
 package org.raml.ramltopojo.extensions;
 
-import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import org.raml.ramltopojo.CreationResult;
@@ -10,52 +8,50 @@ import org.raml.ramltopojo.GenerationContext;
 import org.raml.ramltopojo.TypeDeclarationType;
 import org.raml.v2.api.model.v10.datamodel.TypeDeclaration;
 
-import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created. There, you have it.
  */
 public class ObjectPluginContextImpl implements ObjectPluginContext {
-    private final GenerationContext generationContext;
-    private final CreationResult result;
+  private final GenerationContext generationContext;
+  private final CreationResult result;
 
-    public ObjectPluginContextImpl(GenerationContext generationContext, CreationResult result) {
-        this.generationContext = generationContext;
-        this.result = result;
-    }
+  public ObjectPluginContextImpl(GenerationContext generationContext, CreationResult result) {
+    this.generationContext = generationContext;
+    this.result = result;
+  }
 
-    @Override
-    public Set<CreationResult> childClasses(String ramlTypeName) {
+  @Override
+  public Set<CreationResult> childClasses(String ramlTypeName) {
+    return Optional.ofNullable(generationContext.childClasses(ramlTypeName))
+      .orElse(Collections.emptySet())
+      .stream()
+      .map(input -> generationContext.findCreatedType(input, null))
+      .collect(Collectors.toSet());
+  }
 
-        return FluentIterable.from(generationContext.childClasses(ramlTypeName)).transform(new Function<String, CreationResult>() {
-            @Nullable
-            @Override
-            public CreationResult apply(@Nullable String input) {
-                return generationContext.findCreatedType(input, null);
-            }
-        }).toSet();
-    }
+  @Override
+  public CreationResult creationResult() {
 
-    @Override
-    public CreationResult creationResult() {
+    return result;
+  }
 
-        return result;
-    }
+  @Override
+  public CreationResult dependentType(TypeDeclaration items) {
+    return generationContext.findCreatedType(items.name(), items);
+  }
 
-    @Override
-    public CreationResult dependentType(TypeDeclaration items) {
-        return generationContext.findCreatedType(items.name(), items);
-    }
+  @Override
+  public TypeName forProperty(TypeDeclaration typeDeclaration) {
+    return TypeDeclarationType.calculateTypeName("", typeDeclaration, generationContext, EventType.INTERFACE);
+  }
 
-    @Override
-    public TypeName forProperty(TypeDeclaration typeDeclaration) {
-        return TypeDeclarationType.calculateTypeName("", typeDeclaration, generationContext, EventType.INTERFACE);
-    }
-
-    @Override
-    public TypeName createSupportClass(TypeSpec.Builder newSupportType) {
-
-        return this.generationContext.createSupportClass(newSupportType);
-    }
+  @Override
+  public TypeName createSupportClass(TypeSpec.Builder newSupportType) {
+    return this.generationContext.createSupportClass(newSupportType);
+  }
 }
